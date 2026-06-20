@@ -1,0 +1,8 @@
+vol/
+venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+doc/
+README.md

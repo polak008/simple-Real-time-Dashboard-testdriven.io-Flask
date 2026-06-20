@@ -1,0 +1,35 @@
+services:
+
+  db:
+    image: postgres:18
+    container_name: inventory-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./vol/psql-18:/var/lib/postgresql
+      - ./setup_database.sql:/docker-entrypoint-initdb.d/01-setup.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: .
+    container_name: inventory-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/inventory_db
+      FLASK_DEBUG: "1"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
